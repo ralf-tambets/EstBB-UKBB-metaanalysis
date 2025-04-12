@@ -35,8 +35,6 @@ joined_data = dplyr::left_join(all_split_signals, dataset_meta, by = "dataset_id
 
 write.table(joined_data, "data/sup_tables/ge_vs_met_coloc_results.tsv", sep = "\t", row.names = F, quote = F)
 
-joined_data = readr::read_tsv("data/sup_tables/ge_vs_met_coloc_results.tsv")
-
 #Filter LIPA colocalisations
 lipa_coloc = dplyr::filter(joined_data, gene_name == "LIPA") %>% 
   dplyr::arrange(-PP.H4) %>% 
@@ -49,4 +47,5 @@ sort_coloc = dplyr::filter(joined_data, gene_name == "SORT1") %>%
 
 hmgcr_coloc = dplyr::filter(joined_data, gene_name == "HMGCR") %>% 
   dplyr::arrange(-PP.H4) 
+
 
