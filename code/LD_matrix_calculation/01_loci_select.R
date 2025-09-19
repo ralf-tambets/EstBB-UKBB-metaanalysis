@@ -142,7 +142,7 @@ window = 1*10^6 #in case of a single lead in the region, creates regions of lead
 max_width = 6*10^6 #maximum width of a region (default 6Mb)
 win_shrink_ratio = 0.95 #how much to shrink window in every recursive step (default 5%) 
 
-EST_leads <- read_tsv("~/Documents/tööasjad/biit/NMR/LD_2025/loci_2025_MAF_filtered/01_reformatted/EST_lead_variants_reformatted_MAF_filtered.tsv") %>%
+EST_leads <- read_tsv("...") %>%
   select(metabolite, rsid, chromosome = CHR, position = POS, ALL0, ALL1, log10P = LOG10P) 
 
 meta_EUR_leads <- read_tsv("...") %>%
