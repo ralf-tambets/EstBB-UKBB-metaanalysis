@@ -135,7 +135,6 @@ n_samples=as.numeric(args[7])
 gwas_folder=args[8]
 
 #=======NB! MAY NEED TO CHANGE THESE=======
-n_covariates = 13
 max_causal_SNPs = 10
 n_covariates = 13
 min_cs_corr = 0.5
