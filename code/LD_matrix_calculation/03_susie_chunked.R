@@ -154,7 +154,7 @@ print(n_samples)
 phenos <- unlist(strsplit(phenos, ";"))
 message(length(phenos))
 
-LD_file_prefix <- paste0(LD_folder, "/", locus_chr, "_", locus_start, "_", locus_end, LD_suffix)
+LD_file_prefix <- paste0(LD_folder, "/", locus_chr, "_", format(locus_start, scientific=FALSE), "_", format(locus_end, scientific=FALSE), LD_suffix)
 LD_file <- paste0(LD_file_prefix, ".gz")
 vars_file <- paste0(LD_file_prefix, ".vars")
 
@@ -162,8 +162,8 @@ message(LD_file)
 message(vars_file)
 
 if(!file.exists(LD_file)){
-    message("no file")
-    quit(save="no")
+  message("no file")
+  quit(save="no")
 }
 
 vars <- read_tsv(vars_file, col_names = F) %>% pull(1)
@@ -173,52 +173,52 @@ dim(LD_matrix)
 for (pheno in phenos){
   message(pheno)
   message(date())
-
+  
   #expects parquet file NB! your suffix is probably different
   gwas_file <- paste0(gwas_folder, "/", pheno, "/", pheno, gwas_suffix)
-
-  output_prefix <- paste0(coloc_results_folder, "/", pheno, "_", locus_chr, "_", locus_start, "_", locus_end)
-  region <- paste0("chr", locus_chr,  ":", locus_start, "-", locus_end)
+  
+  output_prefix <- paste0(coloc_results_folder, "/", pheno, "_", locus_chr, "_", format(locus_start, scientific=FALSE), "_", format(locus_end, scientific=FALSE))
+  region <- paste0("chr", locus_chr,  ":", format(locus_start, scientific=FALSE), "-", format(locus_end, scientific=FALSE))
   
   if(file.exists(paste0(output_prefix, "_coloc5.tsv")) || file.exists(paste0(output_prefix, "_NULL_coloc5.tsv"))) {
     next
   }
-
+  
   #expects parquet file
   gwas <- arrow::open_dataset(gwas_file) %>%
-      filter(CHROM == locus_chr & between(GENPOS, locus_start, locus_end)) %>%
-      filter(between(A1FREQ, 0.001, 0.999)) %>% #NB! MAF filter!
-      collect() %>%
-      arrange(CHROM, GENPOS)
-
+    filter(CHROM == locus_chr & between(GENPOS, locus_start, locus_end)) %>%
+    filter(between(A1FREQ, 0.001, 0.999)) %>% #NB! MAF filter!
+    collect() %>%
+    arrange(CHROM, GENPOS)
+  
   print(nrow(gwas))
   
   gwas <- gwas %>% #keep only variants that are in the LD matrix 
-      filter(ID %in% vars) %>%
-      mutate(maf = pmin(A1FREQ, 1-A1FREQ)) %>%
-      rename(beta = BETA, se = SE)
+    filter(ID %in% vars) %>%
+    mutate(maf = pmin(A1FREQ, 1-A1FREQ)) %>%
+    rename(beta = BETA, se = SE)
   print(nrow(gwas))
   
   R <- as.matrix(LD_matrix[gwas$ID, gwas$ID]) #keep only variants that are in gwas 
   R[upper.tri(R)] <- t(R)[upper.tri(t(R))] #triangular to square matrix
   R[is.na(R)] <- 0 #replace na
-
+  
   n <- n_samples
   L <- max_causal_SNPs
   prior_weights <- NULL
-
+  
   gwas <- gwas %>%
-      rename(rsid = ID, position = GENPOS, chromosome = CHROM, allele1 = ALLELE1, allele2 = ALLELE0)
-
+    rename(rsid = ID, position = GENPOS, chromosome = CHROM, allele1 = ALLELE1, allele2 = ALLELE0)
+  
   message('Step 1.')
   message(paste(length(colnames(R)), 'in analysis.'))
-
-
+  
+  
   message('Step 2.')
   yty <- compute_yty(beta = gwas$beta, se = gwas$se, p = gwas$maf, R = R, n = n, k = n_covariates)
   var_y <- yty / (n - 1)
-
-
+  
+  
   message('Step 3.')
   
   #added tryCatch - if it errors out, create empty files with _NULL_ in title
@@ -234,74 +234,74 @@ for (pheno in phenos){
       NULL
     }
   )
-
+  
   if(is.null(res)){
     file.create(paste0(output_prefix, '_NULL_coloc5.tsv'))
     file.create(paste0(output_prefix, '_NULL_coloc3.tsv'))
     file.create(paste0(output_prefix, '_NULL_clpp.tsv'))
     next
   }
-
-
+  
+  
   message('Step 4.')
   susie_obj <- res$susie_obj
-
+  
   lbf_variables <- susie_obj$lbf_variable
   transposed_lbf <- t(lbf_variables)
   transposed_lbf <- data.frame(rsid=row.names(transposed_lbf), transposed_lbf)
   transposed_lbf$old_position <- gwas$position
   transposed_lbf$A1 <- gwas$allele1
   transposed_lbf$A2 <- gwas$allele2
-
+  
   old_rsid <- gwas$rsid
   old_position <- gwas$position
   gwas <- gwas %>% dplyr::rename('SNP'='rsid', 'CHR'='chromosome', 'BP'='position', 'A1'='allele1', 'A2'='allele2')
   gwas$rsid <- old_rsid
   gwas$old_position <- old_position
   gwas$CHR <- ifelse(gwas$CHR == 23, as.character('X'), gwas$CHR)
-
+  
   if (GRCh == 38) {
-  df_hg38 <- gwas
+    df_hg38 <- gwas
   } else {
-  df_hg38 <- MungeSumstats::liftover(gwas, convert_ref_genome='hg38', ref_genome='hg19')
+    df_hg38 <- MungeSumstats::liftover(gwas, convert_ref_genome='hg38', ref_genome='hg19')
   }
-
+  
   message(paste('Number of variants before liftover:', nrow(gwas)))
   message(paste('Number of variants after liftover:', nrow(df_hg38)))
-
+  
   df_hg38$molecular_trait_id <- pheno
   df_hg38$region <- paste0('chr', unique(df_hg38$CHR),':', min(df_hg38$BP),'-', max(df_hg38$BP))
   message(paste('Old region:', region))
   message(paste('New region:', unique(df_hg38$region)))
-
+  
   df_hg38$SNP <- paste0('chr', df_hg38$CHR, '_', df_hg38$BP, '_', df_hg38$A1, '_', df_hg38$A2)
-
+  
   final_lbf <- inner_join(df_hg38, transposed_lbf, by=c('rsid', 'old_position', 'A1', 'A2'))
   final_lbf <- final_lbf[order(final_lbf$BP),]
-
-
+  
+  
   data_coloc5 <- final_lbf[, c('molecular_trait_id', 'region', 'SNP', 'CHR', 'BP', 'X1', 'X2',
-                              'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9', 'X10')]
-
+                               'X3', 'X4', 'X5', 'X6', 'X7', 'X8', 'X9', 'X10')]
+  
   colnames(data_coloc5) <- c('molecular_trait_id', 'region', 'variant', 'chromosome', 'position',
-                              'lbf_variable1', 'lbf_variable2', 'lbf_variable3', 'lbf_variable4', 
-                              'lbf_variable5', 'lbf_variable6', 'lbf_variable7', 'lbf_variable8', 
-                              'lbf_variable9', 'lbf_variable10')
-
+                             'lbf_variable1', 'lbf_variable2', 'lbf_variable3', 'lbf_variable4', 
+                             'lbf_variable5', 'lbf_variable6', 'lbf_variable7', 'lbf_variable8', 
+                             'lbf_variable9', 'lbf_variable10')
+  
   write.table(data_coloc5, paste0(output_prefix, '_coloc5.tsv'), 
               row.names=F, sep='\t', quote=F)  
   message(paste('Coloc5 data is written.')) 
-
+  
   data_coloc3 <- df_hg38[, c('molecular_trait_id', 'region', 'SNP', 'A1', 'A2', 'CHR', 'BP', 'maf',
-                              'beta', 'se', 'LOG10P', 'INFO')]
-
+                             'beta', 'se', 'LOG10P', 'INFO')]
+  
   colnames(data_coloc3) <- c('molecular_trait_id', 'region', 'variant', 'ref', 'alt', 'chromosome',
-                              'position', 'maf', 'beta', 'se', 'log10p', 'info')
-
+                             'position', 'maf', 'beta', 'se', 'log10p', 'info')
+  
   write.table(data_coloc3, paste0(output_prefix, '_coloc3.tsv'), 
               row.names=F, sep='\t', quote=F)  
   message(paste('Coloc3 data is written.'))
-
+  
   df_rsid <- gwas$rsid
   variables <- cbind(df_rsid, res$variables)
   colnames(variables)[1] <- 'rsid'
@@ -309,8 +309,8 @@ for (pheno in phenos){
   variables$A1 <- gwas$A1
   variables$A2 <- gwas$A2
   variables$LOG10P <- gwas$LOG10P
-
-
+  
+  
   pip <- as.data.frame(t(susie_obj$alpha))
   colnames(pip) <- paste0("alpha", 1:10) #added alpha matrix to output - this are the exact PIP values
   pip$rsid <- rownames(pip)
@@ -318,11 +318,11 @@ for (pheno in phenos){
   pip$old_position <- gwas$old_position
   pip$A1 <- gwas$A1
   pip$A2 <- gwas$A2
-
+  
   variables <- merge(variables, pip, by=c('rsid', 'old_position', 'A1', 'A2'))
-
+  
   variables_clpp <- variables %>% filter(cs > 0)
-
+  
   cs <- res$cs
   if(is.null(cs)) {
     write.table(variables_clpp, paste0(output_prefix, '_NULL_clpp.tsv'),
@@ -330,27 +330,27 @@ for (pheno in phenos){
   } else {
     variables_clpp <- merge(variables_clpp, cs, by='cs')
     variables_clpp_hg38 <- inner_join(df_hg38, variables_clpp, by=c('rsid', 'old_position', 'A1', 'A2', "LOG10P"))
-
+    
     message(paste('Number of variants in credible sets before liftover:', nrow(variables_clpp)))
     message(paste('Number of variants in credible sets after liftover:', nrow(variables_clpp_hg38)))
-
+    
     variables_clpp_hg38 <- variables_clpp_hg38[order(variables_clpp_hg38$BP),]
-
+    
     variables_clpp_hg38$z <- zsc(10^-(variables_clpp_hg38$LOG10P), variables_clpp_hg38$beta)
     variables_clpp_hg38$cs_index <- paste0('L', variables_clpp_hg38$cs)
     variables_clpp_hg38$cs_id <- paste0(variables_clpp_hg38$molecular_trait_id,
                                         '_', variables_clpp_hg38$region,
                                         '_', variables_clpp_hg38$cs_index)
-
+    
     data_clpp <- variables_clpp_hg38[, c('molecular_trait_id', 'region', 'SNP', 'CHR', 'BP', 'A1', 'A2',
-                                            'cs_id', 'cs_index', paste0("alpha", 1:10), 'pip', 'z')]
-
+                                         'cs_id', 'cs_index', paste0("alpha", 1:10), 'pip', 'z')]
+    
     colnames(data_clpp) <- c('molecular_trait_id', 'region', 'variant', 'chromosome', 'position',
-                                'ref', 'alt', 'cs_id', 'cs_index', paste0("alpha", 1:10), 'pip', 'z')
-
+                             'ref', 'alt', 'cs_id', 'cs_index', paste0("alpha", 1:10), 'pip', 'z')
+    
     write.table(data_clpp, paste0(output_prefix, '_clpp.tsv'), 
                 row.names=F, sep='\t', quote=F)
-                
+    
     message(paste('CLPP data is written.'))
     rm(R)
     gc()
