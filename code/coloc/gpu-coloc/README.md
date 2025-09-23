@@ -32,7 +32,8 @@ Each Python script has a paired `.sh` file for submitting `sbatch` jobs.
 - `FINNGEN+UKBB+MVP.py` — pre-format FinnGen + UKBB + MVP for gpu-coloc  
 - `meta_signals.py` — pre-format EstBB + UKBB meta-analysis (by population)  
 - `meta_meta_eur.py` — pre-format EstBB + UKBB meta-analysis (meta_EUR)  
-- `MVP_signals.py` — pre-format MVP for gpu-coloc (checks ref/alt alleles and computes -log10p, otherwise there will be p-val = 0)
+- `MVP_signals.py` - pre-format MVP for gpu-coloc (checks ref/alt alleles and computes -log10p, otherwise there will be p-val = 0)
+- `annotate_metabolite_summaries.py` — to annotate colocalisation results with the -log10p, maf and nearest genes of the metabolite
 
 ---
 
