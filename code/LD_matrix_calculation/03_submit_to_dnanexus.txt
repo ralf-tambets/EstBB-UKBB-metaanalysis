@@ -1,0 +1,41 @@
+#run ldstore on DNAnexus
+wanted_chr=19
+population=EUR
+image_file="NMR:/LDstore/ldmatrix_v0.1.tar"
+regions_file=meta_EUR_loci_DNAnexus.tsv
+imputed_file_dir="NMR:/Bulk/Imputation/Imputation from genotype (GEL)/"
+bgen_file=ukb21008_c${wanted_chr}_b0_v1.bgen
+sample_file=ukb21008_c${wanted_chr}_b0_v1.sample
+index_file_dir="NMR:/bgens_reindexed/"
+index_file=ukb21008_c${wanted_chr}_b0_v1.bgen.bgi
+incl_file_dir="NMR:/LDstore/"
+incl_file=${population}_samples.incl
+bgen_full_loc=${imputed_file_dir}${bgen_file}
+index_full_loc=${index_file_dir}${index_file}
+sample_full_loc=${imputed_file_dir}${sample_file}
+incl_full_loc=${incl_file_dir}${incl_file}
+z_file_dir="NMR:/LDstore/z_files/"
+master_file_dir="NMR:/LDstore/master_files/"
+out_folder="NMR:/LDstore/bcor_files"
+keep_file_full_loc=${keep_file_directory}${keep_file_name}
+instance="mem2_ssd1_v2_x32"
+threads=32
+priority="low"
+while IFS=$'\t' read -r -a myArray;
+do chr=${myArray[0]}; start=${myArray[1]}; end=${myArray[2]};
+if [ "$chr" -eq "$wanted_chr" ];
+then echo $chr $start $end;
+if [ "$chr" -eq 23 ];
+then chr="X"; 
+echo $chr;
+fi;
+file_prefix=${population}_chr${chr}_${start}_${end};
+z_file=${file_prefix}.z;
+master_file=${file_prefix}.master;
+z_full_loc=${z_file_dir}${z_file}
+master_full_loc=${master_file_dir}${master_file}
+job_name="${file_prefix} LD calculation";
+cmd="ldstore --in-files ${master_file} --write-bcor --read-only-bgen --n-threads ${threads}"
+dx run swiss-army-knife -iimage_file="$image_file" -iin="$master_full_loc" -iin="$z_full_loc" -iin="$incl_full_loc" -iin="$bgen_full_loc" -iin="$index_full_loc" -iin="$sample_full_loc" -icmd="$cmd" -imount_inputs=true --instance-type="$instance" --brief --yes --priority="$priority" --destination "$out_folder" --name "$job_name"
+fi; 
+done < $regions_file
