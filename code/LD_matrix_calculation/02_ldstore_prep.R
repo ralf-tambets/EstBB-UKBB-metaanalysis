@@ -2,6 +2,8 @@ library(arrow)
 library(dplyr)
 library(readr)
 
+options(scipen=999)
+
 z_folder <- "files_to_upload/z_files/"
 master_folder_dnanexus <- "files_to_upload/master_files_dnanexus/"
 master_folder_hpc <- "files_to_upload/master_files_hpc/"
@@ -54,7 +56,7 @@ for (i in 1:nrow(loci)){
     rename(chromosome = CHROM, position = GENPOS, allele1 = ALLELE0, allele2 = ALLELE1) %>%
     mutate(chromosome = paste0("chr", chromosome)) %>%
     mutate(rsid = ifelse(test = is.na(rsid) | !startsWith(rsid, "rs"), 
-                         yes = paste0(chromosome, ":", format(position, scientific = FALSE), "_", allele1, "_", allele2),
+                         yes = paste0(chromosome, ":", position, "_", allele1, "_", allele2),
                          no = rsid)) %>%
     na.omit() %>%
     arrange(chromosome, position, allele1, allele2) %>%
