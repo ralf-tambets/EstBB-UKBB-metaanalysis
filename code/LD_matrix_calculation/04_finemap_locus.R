@@ -218,7 +218,7 @@ z_variants_to_keep <- which(between(z$position, lead_position - LD_window_size, 
 z <- z[z_variants_to_keep,]
 z <- z %>%
   mutate(molecular_trait_id = pheno,
-         region = paste0('chr', ":", locus_chr, min(position), "-", max(position))) 
+         region = paste0('chr', locus_chr, ":",, min(position), "-", max(position))) 
 
 ld <- read_bcor(paste0("bcor_files/", bcor_file_name, ".bcor"))$read_corr()
 ld <- ld[z_variants_to_keep, z_variants_to_keep]
