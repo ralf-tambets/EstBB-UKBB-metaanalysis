@@ -31,12 +31,12 @@ def main():
     pop = "meta_EUR"
     tag = pop
 
-    pop_path   = f"/path/to/Est_vs_EUR_meta"
+    pop_path   = f"path/to/Est_vs_EUR_meta"
     summary_fn = f"EST_UK_META/{pop}_summary.tsv"
     os.makedirs("EST_UK_META", exist_ok=True)
     os.makedirs(f"EST_UK_META/{pop}_signals", exist_ok=True)
 
-    leads_df = pd.read_csv("/path/to/meta_EUR_loci_merged_full.tsv", sep="\t")
+    leads_df = pd.read_csv("path/to/not_MAF_filtered/02_loci_merged/meta_EUR_loci_merged_full.tsv", sep="\t")
     leads_df.dropna(subset=["POS"], inplace=True)
     leads_df = leads_df[pd.to_numeric(leads_df["POS"], errors="coerce").notna()]
     leads_df["CHR"] = norm_chr(leads_df["CHR"])
@@ -70,8 +70,8 @@ def main():
         lbf_by_key = df.set_index(["CHROM","GENPOS","ALLELE0","ALLELE1"])["lbf"]
 
         for _, lead in lead_block.iterrows():
-            lead_key = (lead.CHR, int(lead.POS), lead.ALL0, lead.ALL1)  
-            lead_lbf = lbf_by_key.get(lead_key, np.nan)                 
+            lead_key = (lead.CHR, int(lead.POS), lead.ALL0, lead.ALL1)  # NEW
+            lead_lbf = lbf_by_key.get(lead_key, np.nan)                 # NEW
             if not np.isfinite(lead_lbf) or lead_lbf < bayes_threshold:
                 continue
 

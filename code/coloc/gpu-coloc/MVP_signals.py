@@ -19,6 +19,7 @@ window         = 1_000_000
 pval_threshold = 5e-8
 root           = "/gpfs/space/projects/genomic_references/summary_stats/MVP"
 
+
 LOG10 = np.log(10.0)
 
 def ref(chrom: str, pos: int):
@@ -157,6 +158,7 @@ def process_file(path: str, pop: str, signals_dir: str) -> list[dict]:
     else:
         req = ["pval","MAF","num_samples","num_cases","or","ci"]
         if not all(c in df.columns for c in req):
+            print(f"error req not found in columns for {path}")
             return []
         df["pval"]        = pd.to_numeric(df["pval"], errors="coerce")
         df["num_samples"] = pd.to_numeric(df["num_samples"], errors="coerce")

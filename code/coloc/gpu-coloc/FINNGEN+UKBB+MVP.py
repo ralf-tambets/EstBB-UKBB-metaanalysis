@@ -6,7 +6,7 @@ effect_prior = 0.2
 bayes_threshold = 5      
 lead_threshold = 5e-8
 window = 1_000_000     
-root = "/path/to/FinnGen+MVP+UKBB" #where the sumstats are located
+root = "/gpfs/space/projects/genomic_references/summary_stats/FinnGen+MVP+UKBB"
 
 def calc_lbf(beta: pd.Series, se: pd.Series, prior: float) -> pd.Series:
     v = se**2
@@ -14,11 +14,11 @@ def calc_lbf(beta: pd.Series, se: pd.Series, prior: float) -> pd.Series:
     z = beta / se
     return 0.5 * (np.log1p(-r) + r * z**2)  
 
-summary_fn = f"FinnGen+MVP+UKBB_summary.tsv"
-os.makedirs(f"FinnGen+MVP+UKBB_signals", exist_ok=True)
+summary_fn = f"FinnGen+MVP+UKBB/FinnGen+MVP+UKBB_summary.tsv"
+os.makedirs(f"FinnGen+MVP+UKBB/FinnGen+MVP+UKBB_signals", exist_ok=True)
 
 for gwas in os.listdir(root):
-    df = pd.read_csv(f"/path/to/{gwas}", sep="\t")
+    df = pd.read_csv(f"/gpfs/space/projects/genomic_references/summary_stats/FinnGen+MVP+UKBB/{gwas}", sep="\t")
 
     df["CHR"] = (
         df["#CHR"].astype(int)
@@ -37,7 +37,9 @@ for gwas in os.listdir(root):
 
     df["lbf"] = calc_lbf(df["all_inv_var_meta_beta"], df["all_inv_var_meta_sebeta"], effect_prior)
     
-    possible = df.loc[(df["all_inv_var_meta_p"] <= lead_threshold)&(df["lbf"] >= bayes_threshold)].sort_values("all_inv_var_meta_p", ascending=False)
+    possible = df.loc[(df["all_inv_var_meta_p"] <= lead_threshold)&(df["lbf"] >= bayes_threshold)].sort_values("all_inv_var_meta_p", ascending=True)
+
+    # possible = df.loc[df["lbf"] >= bayes_threshold].sort_values("lbf", ascending=False)
 
     leads = []
     for _, row in possible.iterrows():
@@ -58,7 +60,7 @@ for gwas in os.listdir(root):
 
         strength   = region["lbf"].max()
 
-        gwas_name = gwas.removesuffix(".tsv") 
+        gwas_name = gwas.removesuffix(".tsv")  # Python 3.9+
 
         signal_id  = (
             f"FinnGen+MVP+UKBB_{gwas_name}_chr{lead.CHR}:"

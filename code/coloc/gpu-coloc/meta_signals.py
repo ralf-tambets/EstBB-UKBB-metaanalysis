@@ -6,8 +6,8 @@ effect_prior    = 0.15
 bayes_threshold = 7
 window          = 1_000_000
 
-root       = "/path/to/EstBB_UKB_meta-analysis"
-leads_path = "/path/to/02_loci_merged/"
+root       = "path/to/meta-analysis/root"
+leads_path = "path/to/not_MAF_filtered/02_loci_merged/"
 
 pop_dir_tag = {
     "EstBB":"EstBB","UKBB_AFR":"AFR","UKBB_AMR":"AMR","UKBB_CSA":"CSA",
@@ -87,8 +87,8 @@ def main():
         lbf_by_key = df.set_index(["CHROM","GENPOS","ALLELE0","ALLELE1"])["lbf"]
 
         for _, lead in lead_block.iterrows():
-            lead_key = (lead.CHR, int(lead.POS), lead.ALL0, lead.ALL1) 
-            lead_lbf = lbf_by_key.get(lead_key, np.nan)                 
+            lead_key = (lead.CHR, int(lead.POS), lead.ALL0, lead.ALL1)  # NEW
+            lead_lbf = lbf_by_key.get(lead_key, np.nan)                 # NEW
             if not np.isfinite(lead_lbf) or lead_lbf < bayes_threshold:
                 continue
 
@@ -123,4 +123,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

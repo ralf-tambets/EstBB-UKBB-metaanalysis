@@ -1,11 +1,19 @@
 # Colocalisation with gpu-coloc
 
 This repository contains the code used to run **colocalisation** using `gpu-coloc` between the following datasets:  
-- EstBB + UKBB meta-analysis  
+- EstBB and UKBB meta-analysis  
 - FinnGen (fine-mapped and ABFs, reused from [doi.org/10.1101/2025.08.25.672103](https://doi.org/10.1101/2025.08.25.672103))  
 - Million Veterans Programme (MVP)  
 - PANUKBB  
-- FinnGen + UKBB + MVP meta-analysis  
+- FinnGen+UKBB+MVP meta-analysis  
+- UK BioBank Pharma Proteomics Project (UKBPPP)
+- INTERVAL RNA
+
+---
+
+## gpu-coloc
+
+gpu-coloc is a reimplementation of coloc.bf_bf and can be installed using `pip install gpu-coloc`. Running it requires `.parquet` files, as in examples created below -- first seperating the signals and then runnign `gpu-coloc -f ...`. Finally `gpu-coloc -r --dir1 first_dataset_parquets --dir2 second_dataset_parquets --results where_to_save_results.tsv`.
 
 ---
 
@@ -29,7 +37,8 @@ Each Python script has a paired `.sh` file for submitting `sbatch` jobs.
 - `download_panukbb.py` — download all PanUKBB summary stats  
 - `panukbb_liftover.py` — liftover PanUKBB from GRCh37 → GRCh38 and check ref/alt alleles  
 - `panukbb_signals.py` — pre-format lifted PanUKBB for gpu-coloc  
-- `FINNGEN+UKBB+MVP.py` — pre-format FinnGen + UKBB + MVP for gpu-coloc  
+- `FINNGEN+UKBB+MVP.py` — pre-format FinnGen+UKBB+MVP for gpu-coloc  
+- `FINNGEN+UKBB+MVP_af.py` — get significant variants from FinnGen+UKBB+MVP and save af and pval
 - `meta_signals.py` — pre-format EstBB + UKBB meta-analysis (by population)  
 - `meta_meta_eur.py` — pre-format EstBB + UKBB meta-analysis (meta_EUR)  
 - `MVP_signals.py` - pre-format MVP for gpu-coloc (checks ref/alt alleles and computes -log10p, otherwise there will be p-val = 0)
