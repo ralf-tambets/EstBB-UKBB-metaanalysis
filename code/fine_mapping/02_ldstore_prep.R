@@ -6,7 +6,6 @@ options(scipen=999)
 
 z_folder <- "files_to_upload/z_files/"
 master_folder_dnanexus <- "files_to_upload/master_files_dnanexus/"
-master_folder_hpc <- "files_to_upload/master_files_hpc/"
 incl_folder <- "files_to_upload/"
 
 maf_limit = 0.001
@@ -82,22 +81,6 @@ for (i in 1:nrow(loci)){
   
   write_delim(x = master_dnanexus,
               file = paste0(master_folder_dnanexus, "EUR_", region_name, ".master"),
-              delim = ";",
-              na = "")
-  
-  master_hpc <- data.frame(
-    z = paste0("EUR_", region_name, ".z"),
-    bgen = paste0("ukb21008_c", chr,"_b0_v1.bgen"),
-    bgi = paste0("ukb21008_c", chr,"_b0_v1.bgen.bgi"),
-    sample = paste0("ukb21008_c", chr,"_b0_v1.sample"),
-    bcor = paste0("../bcor_files/EUR_", region_name, ".bcor"),
-    ld = paste0("../ld_files/EUR_", region_name, ".ld"),
-    n_samples = n_samples,
-    incl = incl_file
-  )
-  
-  write_delim(x = master_hpc,
-              file = paste0(master_folder_hpc, "EUR_", region_name, ".master"),
               delim = ";",
               na = "")
 }

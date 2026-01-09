@@ -32,14 +32,12 @@ n_covariates = as.numeric(args[12])
 is_metaanalysis = as.logical(args[13])
 LD_window_size = as.numeric(args[14])
 
-#=======NB! MAY NEED TO CHANGE THESE=======
 prior_weights = NULL
 independent_lead_LD_threshold = 0.05
 max_causal_SNPs = 10
 min_cs_corr = 0.5
 low_purity_threshold = 0.5
 maf_limit = 0.001
-#=======================================
 
 print(paste("Locus chr:", locus_chr))
 print(paste("Lead position:", lead_position))
@@ -236,7 +234,6 @@ var_y <- yty / (n - 1)
 
 L <- max_causal_SNPs
 
-#added tryCatch - if it errors out, create empty files with _NULL_ in title
 res <- tryCatch(
   { 
     susie_ss_wrapper(df = z, 
@@ -248,13 +245,12 @@ res <- tryCatch(
                      prior_weights = prior_weights, 
                      min_abs_corr = min_cs_corr, 
                      low_purity_threshold = low_purity_threshold, 
-                     check_input = FALSE) #kui true, siis XtX is not a positive semidefinite matrix. kui false, siis missing value where TRUE/FALSE needed (diagonaali sqrt läheb negatiivseks) Error in if (neg.loglik.logscale(lV, betahat = betahat, shat2 = shat2,
+                     check_input = FALSE) 
   },
   error = function(cond) {
     message(output_prefix)
     message(conditionMessage(cond))
     message("===")
-    # Choose a return value in case of error
     NULL
   }
 )
