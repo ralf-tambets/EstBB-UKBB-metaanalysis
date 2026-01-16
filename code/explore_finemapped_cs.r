@@ -102,45 +102,31 @@ dplyr::filter(splice_or_missense, maf < 0.01) #135
 #Fraction of high-MAF finemapped variants that are missense or splice-altering: (415-135)/(3000-583)
 
 
-
 #Import low freq lead variants
-low_maf_leads = readr::read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders.tsv") %>% dplyr::mutate(variant = snp_alternate)
+low_maf_leads = readr::read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders.tsv") %>% 
+  dplyr::mutate(variant = snp_alternate)
 
 #How many low freq leads are contained in at least one credible set
-cs_overlap = dplyr::semi_join(low_maf_cs_variants, low_maf_leads, by = "variant")
-length(unique(sort(cs_overlap$variant))) #n=70 variants are shared, 264 leads in that freq bracket
+cs_overlap = dplyr::semi_join(complete_cs_df, low_maf_leads, by = "variant")
+length(unique(sort(cs_overlap$variant))) #n=96 variants are shared, 324 leads in that freq bracket
 
 #Total variants
-nrow(low_maf_leads) # n = 987 variants
+nrow(low_maf_leads) # n = 480 variants
 
 #Below 0.1% frequency
-rare_mad_leads = dplyr::filter(low_maf_leads, maf < 0.001) 
-nrow(rare_mad_leads) #n = 723
+rare_maf_leads = dplyr::filter(low_maf_leads, maf < 0.001) 
+nrow(rare_maf_leads) #n = 156
 
 #Explore how many low MAF credible sets contain missense variants
-missense = readr::read_tsv("data/big_data/finemapping/meta_EUR_clpp_pip_filtered_missense_snps.tsv.gz")
-missense_vars = dplyr::select(missense, chromosome, position, ref, alt, SYMBOL, Gene) %>% 
-  dplyr::mutate(variant = paste(chromosome, position, ref, alt, sep = "_")) %>% 
-  dplyr::distinct()
+vep <- read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders_VEP_response.txt") %>%
+  rename(SNP = 1) %>%
+  filter(grepl("missense_variant", Consequence) | grepl("splice_", Consequence))
 
-#Explore low MAF finemapped variants that are missense
-dplyr::left_join(missense_vars, low_maf_cs) %>% 
-  dplyr::select(variant, SYMBOL, molecular_trait_id, pip, maf) %>% 
-  dplyr::filter(pip > 0.8) %>% View()
+missense_and_splice_variants <- low_maf_leads %>%
+  select(CHR, SNP = snp_alternate, POS, ALL0, ALL1, MAF = maf, rsid, meta_EUR_associated_metabolites = metabolites_influenced_by_cluster, n_meta_EUR_associated_metabolites = n_metabolites_influenced_by_cluster) %>%
+  inner_join(vep, by = "SNP")
 
-#Look at unique genes only
-dplyr::left_join(missense_vars, low_maf_cs) %>% 
-  dplyr::filter(pip > 0.8) %>%
-  dplyr::select(variant, SYMBOL) %>%
-  dplyr::distinct()
+unique_missense_splice = dplyr::select(missense_and_splice_variants, SNP, rsid, SYMBOL, MAF) %>% dplyr::distinct()
 
-#Which of these low-freq variants are missense or splice?
-s6 = readr::read_tsv("data/big_data/finemapping/Table_S6.tsv") %>%
-  dplyr::mutate(CHR = ifelse(CHR == 23, "X",CHR)) %>%
-  dplyr::mutate(variant = paste(CHR, POS, ALL0, ALL1, sep = "_")) %>%
-  dplyr::left_join(dplyr::select(low_maf_leads, maf, LOG10P, variant))
-
-#Leads with more stringent p-value threshold
-dplyr::filter(low_maf_leads, LOG10P > 9.2, maf < 0.001)
-
-
+dplyr::filter(unique_missense_splice, MAF < .001) #19/156
+dplyr::filter(unique_missense_splice, MAF > .001) #59/324
