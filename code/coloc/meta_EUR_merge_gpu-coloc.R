@@ -64,3 +64,10 @@ metabolite_counts = dplyr::select(clustered_signals, cluster, metabolite) %>%
 
 counted_signals = dplyr::left_join(clustered_signals, metabolite_counts)
 write.table(counted_signals, "data/big_data/annotated_gpu-coloc_results/meta_EUR_big_coloc_151025.tsv", sep = "\t", row.names = F, quote = F)
+
+#Extract colocalisation clusters mentioned in the manuscript
+counted_signals = readr::read_tsv("data/big_data/annotated_gpu-coloc_results_2/meta_EUR_big_coloc_151025.tsv")
+cluster_list = c(351, 207, 141, 25, 104, 696, 61, 74)
+selected_clusters = dplyr::filter(counted_signals, cluster %in% cluster_list) %>% dplyr::arrange(cluster)
+write.table(selected_clusters, "data/big_data/annotated_gpu-coloc_results_2/selected_coloc_clusters.tsv", row.names = F, quote = F, sep = "\t")
+
