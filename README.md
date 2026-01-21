@@ -6,14 +6,15 @@
 
 ## Download data
 * [Full summary statistics](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/data/sumstats_paths.tsv)
+* [Lead variants](https://dx.doi.org/10.5281/zenodo.13937265)
 * [Colocalisation results](https://zenodo.org/records/17945143)
-* [Fine-mapping results]()
+* [Fine-mapping results](https://dx.doi.org/10.5281/zenodo.18132538)
 
 
 ## Code overview
 ### Genetic colocalisation
 * [gpu-coloc software](https://github.com/mjesse-github/gpu-coloc)
-* [Merge meta_EUR colocalisation results across biobanks](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/coloc/meta_EUR_merge_gpu-coloc.R)
+* [Merge meta_EUR colocalisation results across data sources](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/coloc/meta_EUR_merge_gpu-coloc.R)
 
 ### Genetic correlation
 * [Calculate genetic correlation between studies or datasets](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/genetic_correlation/)
