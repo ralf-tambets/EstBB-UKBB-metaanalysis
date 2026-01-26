@@ -19,6 +19,9 @@ This repository contains code from the meta-analysis of 249 metabolic traits acr
 * [Prepare input data for gpu-coloc](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/tree/main/code/coloc/gpu-coloc)
 * [Merge meta_EUR colocalisation results across data sources](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/coloc/meta_EUR_merge_gpu-coloc.R)
 
+### Genome-wide association testing
+* [regenie commands](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/regenie)
+
 ### Genetic correlation
 * [Calculate genetic correlation between studies or datasets](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/genetic_correlation/)
 
