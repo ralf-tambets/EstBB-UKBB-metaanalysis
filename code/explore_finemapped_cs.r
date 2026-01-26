@@ -6,9 +6,9 @@ library("igraph")
 complete_cs_df = arrow::read_parquet("data/big_data/finemapping/UKBB_EUR_fine_mapping_with_meta_EUR_lead_variants.parquet") %>%
   dplyr::as_tibble()
 
-#Import fine mapped credible sets (with overlapping cs removed)
-unique_cs_df = arrow::read_parquet("data/big_data/finemapping/clpp_combined_with_MAF_no_overlaps.parquet") %>%
-  dplyr::as_tibble()
+#Import non-overlapping cs ids
+nonoverlap_cs = readr::read_tsv("data/fine_mapping/non-overlaping_cs_list.tsv.gz")
+unique_cs_df = dplyr::semi_join(complete_cs_df, nonoverlap_cs)
 
 #Count unique non-overlapping cs
 length(unique(unique_cs_df$cs_id)) #116467
@@ -120,13 +120,35 @@ nrow(rare_maf_leads) #n = 156
 #Explore how many low MAF credible sets contain missense variants
 vep <- read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders_VEP_response.txt") %>%
   rename(SNP = 1) %>%
-  filter(grepl("missense_variant", Consequence) | grepl("splice_", Consequence))
+  filter(grepl("missense_variant", Consequence))
 
-missense_and_splice_variants <- low_maf_leads %>%
-  select(CHR, SNP = snp_alternate, POS, ALL0, ALL1, MAF = maf, rsid, meta_EUR_associated_metabolites = metabolites_influenced_by_cluster, n_meta_EUR_associated_metabolites = n_metabolites_influenced_by_cluster) %>%
-  inner_join(vep, by = "SNP")
+low_maf_missense_df = dplyr::transmute(vep, variant = SNP, missense_gene = SYMBOL, is_missense = TRUE) %>%
+  dplyr::distinct()
 
-unique_missense_splice = dplyr::select(missense_and_splice_variants, SNP, rsid, SYMBOL, MAF) %>% dplyr::distinct()
+#Count how many of these variants are either missense or splice variants
+low_maf_splicing_scores = readr::read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders_spliceai_alphagenome_scores.tsv")
+low_maf_scores_selected = dplyr::mutate(low_maf_splicing_scores, spliceai_max = pmax(abs(acceptor_score_plus), 
+                                                                     abs(donor_score_plus), 
+                                                                     abs(acceptor_score_minus), 
+                                                                     abs(donor_score_minus), na.rm = T)) %>%
+  dplyr::mutate(alphagenome_max = pmax(abs(acceptor_score_alphagenome_plus), 
+                                       abs(donor_score_alphagenome_plus), 
+                                       abs(acceptor_score_alphagenome_minus), 
+                                       abs(donor_score_alphagenome_minus), na.rm = T)) %>%
+  dplyr::filter(spliceai_max > 0.1 | alphagenome_max > 0.1)
 
-dplyr::filter(unique_missense_splice, MAF < .001) #19/156
-dplyr::filter(unique_missense_splice, MAF > .001) #59/324
+low_maf_splice_variants = dplyr::transmute(low_maf_scores_selected, variant = snp_alternate, gene_name)
+low_maf_splice_df = dplyr::group_by(low_maf_splice_variants, variant) %>%
+  dplyr::reframe(variant, splice_gene = paste(gene_name, collapse = ",")) %>%
+  dplyr::distinct() %>%
+  dplyr::mutate(is_splice = TRUE)
+
+annotated_leads = dplyr::left_join(low_maf_leads, low_maf_missense_df, by = "variant") %>%
+  dplyr::left_join(low_maf_splice_df, by = "variant")
+
+#Count splice or missense variants
+low_maf_splice_or_missense = dplyr::filter(annotated_leads, is_missense | is_splice) %>% 
+  dplyr::select(variant, is_missense, is_splice, missense_gene, splice_gene, most_significant_metabolite, n_metabolites_influenced_by_cluster, LOG10P, maf) %>% 
+  distinct()
+write.table(low_maf_splice_or_missense,"data/big_data/finemapping/meta_EUR_low_MAF_splice_missense.tsv",sep = "\t", row.names = F, quote = F)
+
