@@ -21,6 +21,7 @@
 
 ### Fine mapping
 * [Calculate LD matrices and use them for fine mapping](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/fine_mapping/)
+* [Analyse fine-mapped credible sets](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/explore_finemapped_cs.r)
 
 ### Mendelian randomization
 * [Run *cis*-MR analyses on loci of interest](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/MR/)
