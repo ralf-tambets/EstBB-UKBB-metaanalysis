@@ -1,4 +1,6 @@
-# Meta-analysis on data from the Estonian Biobank and the UK Biobank 
+# Genome-wide association study for circulating metabolic traits in 619,372 individuals
+
+This repository contains code from the meta-analysis of 249 metabolic traits across the Estonian Biobank and UK Biobank ([preprint](https://doi.org/10.1101/2024.10.15.24315557))
 
 ## Browse results
 * [meta_EUR PheWeb browser](https://nmrmeta.gi.ut.ee/)
