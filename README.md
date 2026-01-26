@@ -21,6 +21,7 @@ This repository contains code from the meta-analysis of 249 metabolic traits acr
 
 ### Genome-wide association testing
 * [regenie commands](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/regenie)
+* [meta-analysis](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/metaanalysis.R)
 
 ### Genetic correlation
 * [Calculate genetic correlation between studies or datasets](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/genetic_correlation/)
