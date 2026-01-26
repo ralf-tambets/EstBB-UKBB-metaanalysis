@@ -103,7 +103,7 @@ dplyr::filter(splice_or_missense, maf < 0.01) #135
 
 
 #Import low freq lead variants
-low_maf_leads = readr::read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders.tsv") %>% 
+low_maf_leads = readr::read_tsv("data/fine_mapping/low_MAF_cluster_leaders.tsv") %>% 
   dplyr::mutate(variant = snp_alternate)
 
 #How many low freq leads are contained in at least one credible set
@@ -118,7 +118,7 @@ rare_maf_leads = dplyr::filter(low_maf_leads, maf < 0.001)
 nrow(rare_maf_leads) #n = 156
 
 #Explore how many low MAF credible sets contain missense variants
-vep <- read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders_VEP_response.txt") %>%
+vep <- readr::read_tsv("data/fine_mapping/low_MAF_cluster_leaders_VEP_response.txt") %>%
   rename(SNP = 1) %>%
   filter(grepl("missense_variant", Consequence))
 
@@ -126,7 +126,7 @@ low_maf_missense_df = dplyr::transmute(vep, variant = SNP, missense_gene = SYMBO
   dplyr::distinct()
 
 #Count how many of these variants are either missense or splice variants
-low_maf_splicing_scores = readr::read_tsv("data/big_data/finemapping/low_MAF_cluster_leaders_spliceai_alphagenome_scores.tsv")
+low_maf_splicing_scores = readr::read_tsv("data/fine_mapping/low_MAF_cluster_leaders_spliceai_alphagenome_scores.tsv")
 low_maf_scores_selected = dplyr::mutate(low_maf_splicing_scores, spliceai_max = pmax(abs(acceptor_score_plus), 
                                                                      abs(donor_score_plus), 
                                                                      abs(acceptor_score_minus), 
@@ -150,5 +150,5 @@ annotated_leads = dplyr::left_join(low_maf_leads, low_maf_missense_df, by = "var
 low_maf_splice_or_missense = dplyr::filter(annotated_leads, is_missense | is_splice) %>% 
   dplyr::select(variant, is_missense, is_splice, missense_gene, splice_gene, most_significant_metabolite, n_metabolites_influenced_by_cluster, LOG10P, maf) %>% 
   distinct()
-write.table(low_maf_splice_or_missense,"data/big_data/finemapping/meta_EUR_low_MAF_splice_missense.tsv",sep = "\t", row.names = F, quote = F)
+write.table(low_maf_splice_or_missense,"data/fine_mapping/meta_EUR_low_MAF_splice_missense.tsv",sep = "\t", row.names = F, quote = F)
 
