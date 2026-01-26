@@ -16,6 +16,7 @@ This repository contains code from the meta-analysis of 249 metabolic traits acr
 ## Code overview
 ### Genetic colocalisation
 * [gpu-coloc software](https://github.com/mjesse-github/gpu-coloc)
+* [Prepare input data for gpu-coloc](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/tree/main/code/coloc/gpu-coloc)
 * [Merge meta_EUR colocalisation results across data sources](https://github.com/ralf-tambets/EstBB-UKBB-metaanalysis/blob/main/code/coloc/meta_EUR_merge_gpu-coloc.R)
 
 ### Genetic correlation
